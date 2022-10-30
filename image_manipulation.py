@@ -67,7 +67,7 @@ def distance_proccesing():
             hist1 = cell_histograms[ij1]
             hist2 = cell_histograms[ij2]
 
-            distance = cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL)
+            distance = 1 - cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL)
 
             # i = x value of cell
             # j = y value of cell
@@ -77,7 +77,7 @@ def distance_proccesing():
             cell2_num = int(ij2[1]) * (q-1) + int(ij2[0])
 
             distances[(cell1_num, cell2_num)] = distance
-            
+
             if distance < min_distance:
                 min_distance = distance
 
