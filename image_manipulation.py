@@ -29,28 +29,35 @@ def proccess_file(image):
 
             histogram = cv2.calcHist([cell],[0],None,[256],[0,256]) 
             cell_histograms[str(i) + str(j)] = histogram
-
-            # cv2.imshow('Cell', cell)
-            # cv2.imshow('Average Color', cell_one_color)
-            # cv2.waitKey(0)
-
-    # print(cell_histograms.keys())
     
-    min_distance_cells, min_distance = distance_proccesing()
+    min_distance_cells, min_distance, max_distance_cells, max_distance = distance_proccesing()
 
-    # print(len(cells))
-    
-    # print(min_distance_cells)
+    print("Min Distance", min_distance)
+    print("Min Distance Cells: " + str(min_distance_cells[0]) + " " + str(min_distance_cells[1]))
 
-    print(min_distance)
-    cv2.imshow('Cell 1', cells[int(min_distance_cells[0]) - 1])
-    cv2.imshow('Cell 2', cells[int(min_distance_cells[1]) - 1])
+    min_dist_c1_name = "Min Dist Cell 1 (Cell " + str(min_distance_cells[0]) + ")"
+    min_dist_c2_name = "Min Dist Cell 2 (Cell " + str(min_distance_cells[1]) + ")"
+
+    cv2.imshow(min_dist_c1_name, cells[min_distance_cells[0] - 1])
+    cv2.imshow(min_dist_c2_name, cells[min_distance_cells[1] - 1])
+    cv2.waitKey(0)
+
+    print("Max Distance", max_distance)
+    print("Max Distance Cells: " + str(max_distance_cells[0]) + " " + str(max_distance_cells[1]))
+
+    max_dist_c1_name = "Max Dist Cell 1 (Cell " + str(max_distance_cells[0]) + ")"
+    max_dist_c2_name = "Max Dist Cell 2 (Cell " + str(max_distance_cells[1]) + ")"
+
+    cv2.imshow(max_dist_c1_name, cells[max_distance_cells[0] - 1])
+    cv2.imshow(max_dist_c2_name, cells[max_distance_cells[1] - 1])
     cv2.waitKey(0)
 
 def distance_proccesing():
     distances = {}
     min_distance = float('inf')
+    max_distance = 0
     min_distance_cells = []
+    max_distance_cells = []
 
     for ij1 in cell_histograms.keys():
         for ij2 in cell_histograms.keys():
@@ -74,14 +81,14 @@ def distance_proccesing():
             if distance < min_distance:
                 min_distance = distance
 
-                # print(q)
-
-                # print(ij1[0], ij1[1])
-                # print(ij2[0], ij2[1])
-
                 min_distance_cells = [cell1_num, cell2_num]
 
-    return min_distance_cells, min_distance
+            if distance > max_distance:
+                max_distance = distance
+
+                max_distance_cells = [cell1_num, cell2_num]
+
+    return min_distance_cells, min_distance, max_distance_cells, max_distance
 
 def average_color(image):
     average_color_row = np.average(image, axis=0)
