@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import shutil
 import pandas as pd
 import cv2
 from sklearn.cluster import KMeans
@@ -170,17 +171,17 @@ def proccess_file(image, file_name):
             clusters[cells_clusters[k]].append([cells[k], k])
 
     for bucket in clusters.keys():
-        bucket_dir = "output\\" + filename[0:-4] + "\\" + bucket
+        bucket_dir = "output\\" + filename[0:-4] + "\\" + str(bucket)
         os.mkdir(bucket_dir)
 
         for i in range(len(clusters[bucket])):
             cv2.imwrite(
-                os.path.join(bucket_dir, "cell" + clusters[bucket][i][1] + ".jpg"),
+                os.path.join(bucket_dir, "cell" + str(clusters[bucket][i][1]) + ".jpg"),
                 clusters[bucket][i][0],
             )
 
 
-for root, dirs, files in os.walk('output\'):
+for root, dirs, files in os.walk("output\\"):
     for f in files:
         os.unlink(os.path.join(root, f))
     for d in dirs:
