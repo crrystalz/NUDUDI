@@ -21,9 +21,9 @@ def find_average_color(image):
 
 
 def compute_histogram(image):
-    green_hist = cv2.calcHist([image],[1],None,[16],[0,256])
-    red_hist = cv2.calcHist([image],[2],None,[16],[0,256])
-    blue_hist = cv2.calcHist([image],[0],None,[16],[0,256])
+    green_hist = cv2.calcHist([image], [1], None, [16], [0, 256])
+    red_hist = cv2.calcHist([image], [2], None, [16], [0, 256])
+    blue_hist = cv2.calcHist([image], [0], None, [16], [0, 256])
 
     green_hist = [x.tolist()[0] for x in green_hist]
     red_hist = [x.tolist()[0] for x in red_hist]
@@ -36,10 +36,9 @@ def compute_histogram(image):
         hist.append(k)
     for k in blue_hist:
         hist.append(k)
-    
-    # print(hist)
 
     return hist
+
 
 def distance_proccesing():
     distances = {}
@@ -56,7 +55,7 @@ def distance_proccesing():
             hist1 = cell_histograms[i]
             hist2 = cell_histograms[j]
 
-            distance = sum([(p-q) ** 2 for p, q in zip(hist1, hist2)]) ** .5
+            distance = sum([(p - q) ** 2 for p, q in zip(hist1, hist2)]) ** 0.5
             # distance = 1 - cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL)
 
             distances[(i, j)] = distance
@@ -75,11 +74,24 @@ def distance_proccesing():
 
 
 def find_k_means_clusters_from_hist():
-    # print(cell_histograms)
-    kmeans = KMeans(n_clusters=2, random_state=0).fit(cell_histograms)
-    print(kmeans.labels_)
+    wcss = []
+    for i in range(1, 11):
+        k_means = KMeans(n_clusters=i, init="k-means++", random_state=42)
+        k_means.fit(cell_histograms)
+        wcss.append(k_means.inertia_)
 
-def proccess_file(image):
+    # plt.plot(np.arange(1,11),wcss)
+    # plt.xlabel('Clusters')
+    # plt.ylabel('SSE')
+    # plt.show()
+
+    k_means_optimum = KMeans(n_clusters=2, init="k-means++", random_state=42)
+    y = list(map(int, k_means_optimum.fit_predict(cell_histograms)))
+
+    return y
+
+
+def proccess_file(image, file_name):
     (h, w) = image.shape[:2]
 
     cell_size = 300
@@ -148,21 +160,44 @@ def proccess_file(image):
     # cv2.imshow(max_dist_c2_name, cells[max_distance_cells[1] - 1])
     # cv2.waitKey(0)
 
-    find_k_means_clusters_from_hist()
+    cells_clusters = find_k_means_clusters_from_hist()
 
+    clusters = {}
+    for k in range(len(cells_clusters)):
+        if cells_clusters[k] not in clusters:
+            clusters[cells_clusters[k]] = [[cells[k], k]]
+        else:
+            clusters[cells_clusters[k]].append([cells[k], k])
+
+    for bucket in clusters.keys():
+        bucket_dir = "output\\" + filename[0:-4] + "\\" + bucket
+        os.mkdir(bucket_dir)
+
+        for i in range(len(clusters[bucket])):
+            cv2.imwrite(
+                os.path.join(bucket_dir, "cell" + clusters[bucket][i][1] + ".jpg"),
+                clusters[bucket][i][0],
+            )
+
+
+for root, dirs, files in os.walk('output\'):
+    for f in files:
+        os.unlink(os.path.join(root, f))
+    for d in dirs:
+        shutil.rmtree(os.path.join(root, d))
 
 directory = r"datasets\aipal-nchu_RiceSeedlingDataset\images"
 
 for filename in os.listdir(directory):
     f = os.path.join(directory, filename)
 
+    file_output_dir = "output\\" + filename[0:-4]
+    # print(file_output_dir)
+    os.mkdir(file_output_dir)
+
     if os.path.isfile(f):
         src_img = cv2.imread(f)
 
         print(f)
 
-        proccess_file(src_img)
-
-# dataset = pd.read_csv("roller_coasters.csv")
-# X = dataset.iloc[:, [3,4]].values
-# print(X)
+        proccess_file(src_img, filename)
