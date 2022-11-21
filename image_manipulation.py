@@ -6,16 +6,6 @@ import cv2
 from sklearn.cluster import KMeans
 
 
-def flatten(l):
-    flat_list = []
-    for sublist in l:
-        for sublist2 in sublist:
-            for item in sublist2:
-                flat_list.append(item)
-
-    return flat_list
-
-
 def find_average_color(image):
     average_color_row = np.average(image, axis=0)
     average_color1 = np.average(average_color_row, axis=0)
@@ -29,6 +19,27 @@ def find_average_color(image):
 
     return average_color, avg_color_img
 
+
+def compute_histogram(image):
+    green_hist = cv2.calcHist([image],[1],None,[16],[0,256])
+    red_hist = cv2.calcHist([image],[2],None,[16],[0,256])
+    blue_hist = cv2.calcHist([image],[0],None,[16],[0,256])
+
+    green_hist = [x.tolist()[0] for x in green_hist]
+    red_hist = [x.tolist()[0] for x in red_hist]
+    blue_hist = [x.tolist()[0] for x in blue_hist]
+
+    hist = []
+    for k in red_hist:
+        hist.append(k)
+    for k in green_hist:
+        hist.append(k)
+    for k in blue_hist:
+        hist.append(k)
+    
+    # print(hist)
+
+    return hist
 
 def distance_proccesing():
     distances = {}
@@ -45,7 +56,8 @@ def distance_proccesing():
             hist1 = cell_histograms[i]
             hist2 = cell_histograms[j]
 
-            distance = 1 - cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL)
+            distance = sum([(p-q) ** 2 for p, q in zip(hist1, hist2)]) ** .5
+            # distance = 1 - cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL)
 
             distances[(i, j)] = distance
 
@@ -62,9 +74,10 @@ def distance_proccesing():
     return min_distance_cells, min_distance, max_distance_cells, max_distance, distances
 
 
-# def k_means_clustering():
-
-
+def find_k_means_clusters_from_hist():
+    # print(cell_histograms)
+    kmeans = KMeans(n_clusters=2, random_state=0).fit(cell_histograms)
+    print(kmeans.labels_)
 
 def proccess_file(image):
     (h, w) = image.shape[:2]
@@ -92,24 +105,10 @@ def proccess_file(image):
             cell_color, cell_avg_color_img = find_average_color(cell)
             cell_colors.append(cell_color)
 
-            histogram = cv2.calcHist([cell], [0, 1, 2], None, [256, 256,256], [0, 256, 0, 256, 0, 256])
-            # Histogram is a list of lists of lists
-            # Outermost list - 
-            # Middle list -
-            # Inner list - 
-            
-            # print(histogram)
-            # print(len(histogram))
-            # print(len(histogram[0]))
-            # print(len(histogram[0][0]))
-
-            flattened_histogram = flatten(histogram)
-            print(len(flattened_histogram))
-
-            cell_histograms.append(flattened_histogram)
+            cell_histograms.append(compute_histogram(cell))
 
             # New cell
-            print("New cell")
+            # print("New cell")
 
     # (
     #     min_distance_cells,
@@ -149,7 +148,7 @@ def proccess_file(image):
     # cv2.imshow(max_dist_c2_name, cells[max_distance_cells[1] - 1])
     # cv2.waitKey(0)
 
-    # k_means_clustering()
+    find_k_means_clusters_from_hist()
 
 
 directory = r"datasets\aipal-nchu_RiceSeedlingDataset\images"
