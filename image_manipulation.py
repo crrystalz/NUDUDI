@@ -41,7 +41,7 @@ def compute_histogram(image):
     return hist
 
 
-def distance_proccesing():
+def find_hist_dist():
     distances = {}
     min_distance = float("inf")
     max_distance = 0
@@ -89,10 +89,45 @@ def find_k_means_clusters_from_hist():
     k_means_optimum = KMeans(n_clusters=2, init="k-means++", random_state=42)
     y = list(map(int, k_means_optimum.fit_predict(cell_histograms)))
 
-    return y
+    global clusters_dict
+    clusters_dict = {}
+    for k in range(len(y)):
+        if y[k] not in clusters_dict:
+            clusters_dict[y[k]] = [[cells[k], k]]
+        else:
+            clusters_dict[y[k]].append([cells[k], k])
+
+    global clusters_lst
+    clusters_lst = []
+
+    for _ in range(len(clusters_dict)):
+        clusters_lst.append([])
+    
+    return
 
 
-def proccess_file(image, file_name):
+def find_cluster_dist(l1, l2):
+    # print(l1[0])
+    # print(l2)
+    
+    s1 = set(l1)
+    s2 = set(l2)
+    
+    size_s1 = len(s1)
+    size_s2 = len(s2)
+ 
+    intersect = s1 & s2
+ 
+    size_in = len(intersect)
+ 
+    jaccard_index = size_in  / (size_s1 + size_s2 - size_in)
+ 
+    jaccard_dist = 1 - jaccard_index
+
+    return jaccard_dist
+
+
+def proccess_file(image, filename):
     (h, w) = image.shape[:2]
 
     cell_size = 300
@@ -129,7 +164,7 @@ def proccess_file(image, file_name):
     #     max_distance_cells,
     #     max_distance,
     #     distances
-    # ) = distance_proccesing()
+    # ) = find_hist_dist()
 
     # print("Min Distance", min_distance)
     # print(
@@ -161,23 +196,20 @@ def proccess_file(image, file_name):
     # cv2.imshow(max_dist_c2_name, cells[max_distance_cells[1] - 1])
     # cv2.waitKey(0)
 
-    cells_clusters = find_k_means_clusters_from_hist()
 
-    clusters = {}
-    for k in range(len(cells_clusters)):
-        if cells_clusters[k] not in clusters:
-            clusters[cells_clusters[k]] = [[cells[k], k]]
-        else:
-            clusters[cells_clusters[k]].append([cells[k], k])
+    find_k_means_clusters_from_hist()
 
-    for bucket in clusters.keys():
+    for bucket in clusters_dict.keys():
+        for cell in clusters_dict[bucket]:
+            clusters_lst[bucket].append(cell[1])
+        
         bucket_dir = "output\\" + filename[0:-4] + "\\" + str(bucket)
         os.mkdir(bucket_dir)
 
-        for i in range(len(clusters[bucket])):
+        for i in range(len(clusters_dict[bucket])):
             cv2.imwrite(
-                os.path.join(bucket_dir, "cell" + str(clusters[bucket][i][1]) + ".jpg"),
-                clusters[bucket][i][0],
+                os.path.join(bucket_dir, "cell" + str(clusters_dict[bucket][i][1]) + ".jpg"),
+                clusters_dict[bucket][i][0],
             )
 
 
@@ -187,8 +219,9 @@ for root, dirs, files in os.walk("output\\"):
     for d in dirs:
         shutil.rmtree(os.path.join(root, d))
 
-directory = r"datasets\aipal-nchu_RiceSeedlingDataset\images"
+directory = r"datasets\testing"
 
+global_clusters_lst = []
 for filename in os.listdir(directory):
     f = os.path.join(directory, filename)
 
@@ -202,3 +235,15 @@ for filename in os.listdir(directory):
         print(f)
 
         proccess_file(src_img, filename)
+
+        global_clusters_lst.append(clusters_lst)
+
+for i in range(len(global_clusters_lst)):
+    for j in range(1, len(global_clusters_lst)):
+        cl1 = global_clusters_lst[i]
+        cl2 = global_clusters_lst[j]
+
+        for k in range(len(cl1)):
+            for l in range(1, len(cl2)):
+                cluster_dist = find_cluster_dist(cl1[k], cl2[l])
+                print(cluster_dist)
