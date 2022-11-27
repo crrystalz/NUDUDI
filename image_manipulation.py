@@ -9,7 +9,9 @@ from sklearn.cluster import KMeans
 
 def find_average_color(image):
     average_color_row = np.average(image, axis=0)
+    print(len(average_color_row))
     average_color1 = np.average(average_color_row, axis=0)
+    # print(average_color1)
 
     average_color = []
     for i in range(3):
@@ -41,7 +43,7 @@ def compute_histogram(image):
     return hist
 
 
-def find_hist_dist():
+def find_hist_dist(cell_histograms):
     distances = {}
     min_distance = float("inf")
     max_distance = 0
@@ -74,7 +76,7 @@ def find_hist_dist():
     return min_distance_cells, min_distance, max_distance_cells, max_distance, distances
 
 
-def find_k_means_clusters_from_hist():
+def find_k_means_clusters_from_hist(cells, cell_histograms):
     wcss = []
     for i in range(1, 11):
         k_means = KMeans(n_clusters=i, init="k-means++", random_state=42)
@@ -89,7 +91,6 @@ def find_k_means_clusters_from_hist():
     k_means_optimum = KMeans(n_clusters=2, init="k-means++", random_state=42)
     y = list(map(int, k_means_optimum.fit_predict(cell_histograms)))
 
-    global clusters_dict
     clusters_dict = {}
     for k in range(len(y)):
         if y[k] not in clusters_dict:
@@ -97,13 +98,12 @@ def find_k_means_clusters_from_hist():
         else:
             clusters_dict[y[k]].append([cells[k], k])
 
-    global clusters_lst
     clusters_lst = []
 
     for _ in range(len(clusters_dict)):
         clusters_lst.append([])
 
-    return
+    return clusters_dict, clusters_lst
 
 
 def find_cluster_dist(l1, l2):
@@ -241,19 +241,15 @@ def proccess_file(image, filename):
 
     cell_size = 300
 
-    global q
-    r = w % cell_size  # Remainder
-    q = w // cell_size  # Quotient
+    hq = h // cell_size
+    wq = w // cell_size
 
-    global cells
     cells = []
-    global cell_colors
     cell_colors = []
-    global cell_histograms
     cell_histograms = []
 
-    for i in range(1, (q + 1)):
-        for j in range(1, (q + 1)):
+    for i in range(1, (hq + 1)):
+        for j in range(1, (wq + 1)):
             cell = image[
                 (i - 1) * cell_size : i * cell_size, (j - 1) * cell_size : j * cell_size
             ]
@@ -272,8 +268,8 @@ def proccess_file(image, filename):
     #     min_distance,
     #     max_distance_cells,
     #     max_distance,
-    #     distances
-    # ) = find_hist_dist()
+    #     distances,
+    # ) = find_hist_dist(cell_histograms)
 
     # print("Min Distance", min_distance)
     # print(
@@ -305,7 +301,9 @@ def proccess_file(image, filename):
     # cv2.imshow(max_dist_c2_name, cells[max_distance_cells[1] - 1])
     # cv2.waitKey(0)
 
-    find_k_means_clusters_from_hist()
+    clusters_dict, clusters_lst = find_k_means_clusters_from_hist(
+        cells, cell_histograms
+    )
 
     for bucket in clusters_dict.keys():
         for cell in clusters_dict[bucket]:
@@ -322,6 +320,8 @@ def proccess_file(image, filename):
                 clusters_dict[bucket][i][0],
             )
 
+    return clusters_lst
+
 
 for root, dirs, files in os.walk("output\\"):
     for f in files:
@@ -329,7 +329,7 @@ for root, dirs, files in os.walk("output\\"):
     for d in dirs:
         shutil.rmtree(os.path.join(root, d))
 
-directory = r"datasets\testing"
+directory = r"datasets\example_rostock_soda_rgb\images"
 
 global_clusters_lst = []
 for filename in os.listdir(directory):
@@ -346,7 +346,7 @@ for filename in os.listdir(directory):
 
         proccess_file(src_img, filename)
 
-        global_clusters_lst.append(clusters_lst)
+        clusters_lst = global_clusters_lst.append(clusters_lst)
 
 global_clusters_dists = []
 for _ in range(len(global_clusters_lst)):
