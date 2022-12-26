@@ -78,10 +78,13 @@ def adjust_matrix(mat, cover_rows, cover_cols):
             cur_mat[cover_rows[row], cover_cols[col]] = (
                 cur_mat[cover_rows[row], cover_cols[col]] + min_num
             )
+
     return cur_mat
 
 
 def hungarian_algorithm(mat):
+    print(mat)
+
     dim = mat.shape[0]
     cur_mat = mat
 
@@ -107,4 +110,5 @@ def ans_calculation(mat, pos):
     for i in range(len(pos)):
         total += mat[pos[i][0], pos[i][1]]
         ans_mat[pos[i][0], pos[i][1]] = mat[pos[i][0], pos[i][1]]
+
     return total, ans_mat
