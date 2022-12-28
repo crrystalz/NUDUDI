@@ -11,21 +11,21 @@ def linear_assignment_problem(single_image_lst, output_writer):
                 single_image_lst[i].clusters, single_image_lst[j].clusters
             )
 
-            output_writer.double_print("")
-            output_writer.double_print(
-                "Distance Between Each Cluster Of Two Images"
-                + str(img_pair_clusters_dists)
-            )
+            # output_writer.double_print("")
+            # output_writer.double_print(
+            #     "Distance Between Each Cluster Of Two Images: \n"
+            #     + str(img_pair_clusters_dists)
+            # )
 
             cost_matrix = np.array(img_pair_clusters_dists)
 
             ans_pos = hungarian_algorithm(cost_matrix.copy())
             ans, ans_mat = ans_calculation(cost_matrix, ans_pos)
 
-            output_writer.double_print("")
-            output_writer.double_print(
-                f"Linear Assignment Problem Result: {ans:.0f}\n{ans_mat}"
-            )
+            # output_writer.double_print("")
+            # output_writer.double_print(
+            #     f"Linear Assignment Problem Result: {ans:.0f}\n{ans_mat}"
+            # )
 
     return img_pair_clusters_dists
 
@@ -50,19 +50,13 @@ def find_clusters_lists_dist(cluster_lst1, cluster_lst2):
     return img_pair_clusters_dists
 
 
-def cell_change_between_two_cluster(cell_num, cluster_lst1, cluster_lst2, threshold):
-    for clusters in cluster_lst1:
-        for cluster in clusters:
-            if cell_num in clusters:
-                cell_c1 = cluster
-    for clusters in cluster_lst2:
-        for cluster in clusters:
-            if cell_num in clusters:
-                cell_c2 = cluster
-
+def cell_change_between_two_image(cell_id, single_image1, single_image2, min_cluster_dist):
+    cell_c1 = single_image1.find_cluster_from_cell(cell_id)
+    cell_c2 = single_image2.find_cluster_from_cell(cell_id)
+    
     cell_clusters_dist = cell_c1.find_dist(cell_c2)
 
-    if cell_clusters_dist > threshold:
+    if cell_clusters_dist > min_cluster_dist:
         changed_cluster = True
     else:
         changed_cluster = False
@@ -70,12 +64,15 @@ def cell_change_between_two_cluster(cell_num, cluster_lst1, cluster_lst2, thresh
     return cell_clusters_dist, changed_cluster
 
 
-def cell_cluster_change_proccesing(cell_num, single_image_lst, change_threshold):
+def cell_cluster_change_proccesing(cell_id, single_image_lst, min_cluster_dist):
     counter = 0
     cluster_changes = []
     for i in range(1, len(single_image_lst)):
-        cell_clusters_dist, changed_cluster = cell_change_between_two_cluster(
-            cell_num, single_image_lst[0], single_image_lst[i], change_threshold
+        cell_clusters_dist, changed_cluster = cell_change_between_two_image(
+            cell_id,
+            single_image_lst[0],
+            single_image_lst[i],
+            min_cluster_dist,
         )
         if changed_cluster:
             counter += 1
@@ -89,18 +86,19 @@ def cell_cluster_change_proccesing(cell_num, single_image_lst, change_threshold)
 
 
 def find_cells_changed_cluster(
-    num_cells, single_image_lst, ratio_threshold, change_threshold
+    num_cells, single_image_lst, min_cell_cluster_change_ratio, min_cluster_dist
 ):
     cell_clusters_data = {}
     likely_changed_cells = []
-    for cell_num in range(num_cells):
+    for cell in single_image_lst[0].cells:
         cell_cluster_change_ratio, cluster_changes = cell_cluster_change_proccesing(
-            cell_num, single_image_lst, change_threshold
+            cell.id, single_image_lst, min_cluster_dist
         )
-        if cell_cluster_change_ratio > ratio_threshold:
-            likely_changed_cells.append([cell_num, cell_cluster_change_ratio])
+        
+        if cell_cluster_change_ratio > min_cell_cluster_change_ratio:
+            likely_changed_cells.append([cell.id, cell_cluster_change_ratio])
 
-        cell_clusters_data[cell_num] = [cluster_changes, cell_cluster_change_ratio]
+        cell_clusters_data[cell.id] = [cluster_changes, cell_cluster_change_ratio]
 
     likely_changed_cells = sorted(
         likely_changed_cells, key=lambda x: x[1], reverse=True
@@ -109,14 +107,18 @@ def find_cells_changed_cluster(
     return likely_changed_cells, cell_clusters_data
 
 
-def analyze(single_image_lst, num_cells, output_writer):
+def analyze(single_image_lst, num_cells, config, output_writer):
+    min_cell_cluster_change_ratio = config.min_cell_cluster_change_ratio
+    min_cluster_dist = config.min_cluster_dist
+
     img_pair_clusters_dists = linear_assignment_problem(single_image_lst, output_writer)
     likely_changed_cells, cell_clusters_data = find_cells_changed_cluster(
-        num_cells, single_image_lst, 0.5, 0.5
+        num_cells, single_image_lst, min_cell_cluster_change_ratio, min_cluster_dist
     )
 
+    output_writer.double_print("Number of likely changed cells: " + str(len(likely_changed_cells)))
     output_writer.double_print("Likely Changed Cells:")
-    output_writer.double_print(likely_changed_cells)
+    [output_writer.double_print(x) for x in likely_changed_cells]
     output_writer.double_print("")
     output_writer.double_print("Cell Clusters Data:")
-    output_writer.double_print(cell_clusters_data)
+    [output_writer.double_print(str(x) + " " + str(cell_clusters_data[x])) for x in cell_clusters_data.keys()]

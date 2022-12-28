@@ -8,12 +8,15 @@ class SingleImage:
     cells = []
     clusters = []
     image = None
+    filename = ""
 
-    def __init__(self, image, cell_size):
+    def __init__(self, image, cell_size, filename):
         (h, w) = image.shape[:2]
 
         hq = h // cell_size
         wq = w // cell_size
+
+        self.cells = []
 
         for i in range(1, (hq + 1)):
             for j in range(1, (wq + 1)):
@@ -25,6 +28,17 @@ class SingleImage:
 
                 cell = Cell(id, cell_image)
                 self.cells.append(cell)
+
+        self.clusters = []
+        self.image = image
+        self.filename = filename
+
+    def find_cluster_from_cell(self, cell_id):
+        for cluster in self.clusters:
+            if cluster.has_cell(cell_id):
+                return cluster
+        
+        return None
 
     def average_color_of_cells(self):
         # find average color of each cell
@@ -75,49 +89,19 @@ class SingleImage:
         x = 0
         for cell in self.cells:
             cell_histograms.append(cell.histogram)
-            print(type(cell.histogram))
             cell_ids[x] = cell
             x += 1
 
-        # num_clusters = 4 # turn this into a function paramter later
-        # criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-        # _, labels, _ = cv2.kmeans(cell_histograms, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
-
-        # wcss = []
-        # for i in range(1, 11):
-        #     k_means = KMeans(n_clusters=i, init="k-means++", random_state=42)
-        #     k_means.fit(cell_histograms)
-        #     wcss.append(k_means.inertia_)
-
-        # plt.plot(np.arange(1,11),wcss)
-        # plt.xlabel('Clusters')
-        # plt.ylabel('SSE')
-        # plt.show()
-
-        x = KMeans(n_clusters=4, init="k-means++", random_state=42).fit(cell_histograms)
-        # x = k_means_optimum.fit(cell_histograms)
-        # y = list(map(int, x))
+        model = KMeans(n_clusters=4, init="k-means++", random_state=42)
+        model.fit(cell_histograms)
+        predicted_labels = model.predict(cell_histograms)
 
         cluster_id_to_cluster = {}
-        for k in range(len(x.labels_)):
-            cluster_id = x.labels_[k]
-            if cluster_id not in cluster_id_to_cluster:
+        for k in range(len(predicted_labels)):
+            cluster_id = predicted_labels[k]
+            if cluster_id not in cluster_id_to_cluster.keys():
                 new_cluster = Cluster(cluster_id)
                 cluster_id_to_cluster[cluster_id] = new_cluster
                 self.clusters.append(new_cluster)
+
             cluster_id_to_cluster[cluster_id].add_cell(cell_ids[k])
-
-        # ids = []
-
-        # for k in range(len(y)):
-        # k+1 = id of cell
-        # y[k] = id of cluster for that cell
-
-        # print(k + 1, y[k])
-
-        # if y[k] not in ids:  # new cluster, y[k] is the id of the cluster
-        #     ids.append(y[k])
-        #     self.clusters.append(Cluster(y[k], [cell_id_to_cell[k + 1]]))
-
-        # else:
-        #     self.clusters[y[k]].add_cell(cell_id_to_cell[k + 1])

@@ -9,4 +9,4 @@ class OutputWriter:
 
     def double_print(self, string):
         print(string)
-        self.output_file.write(string + "\n")
+        self.output_file.write(str(string) + "\n")

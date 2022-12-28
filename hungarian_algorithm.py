@@ -83,7 +83,7 @@ def adjust_matrix(mat, cover_rows, cover_cols):
 
 
 def hungarian_algorithm(mat):
-    print(mat)
+    # print(mat)
 
     dim = mat.shape[0]
     cur_mat = mat

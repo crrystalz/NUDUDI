@@ -1,16 +1,36 @@
 class Cluster:
     id = 0
-    cell_list = []
+    cells = []
 
     def __init__(self, id):
         self.id = id
+        self.cells = []
+
 
     def add_cell(self, cell):
-        self.cell_list.append(cell)
+        self.cells.append(cell)
+
+    def find_cell_from_id(self, cell_id):
+        for cell in self.cells:
+            if cell.id == cell_id:
+                return cell
+
+    def has_cell(self, cell_id):
+        for c in self.cells:
+            if c.id == cell_id:
+                return True
+
+        return False
 
     def find_dist(self, other_cluster):
-        s1 = set(self.cell_list)
-        s2 = set(other_cluster.cell_list)
+        s1 = set()
+        s2 = set()
+
+        for c in self.cells:
+            s1.add(c.id)
+        
+        for c in other_cluster.cells:
+            s2.add(c.id)
 
         size_s1 = len(s1)
         size_s2 = len(s2)

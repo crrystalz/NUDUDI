@@ -4,12 +4,13 @@ import shutil
 import cv2
 
 from utils import OutputWriter
+from config import Config
 from single_image import SingleImage
 from analyze import analyze
 
 
 def proccess_file(image, filename, cell_size, output_writer):
-    single_image = SingleImage(image, cell_size)
+    single_image = SingleImage(image, cell_size, filename)
 
     if q_minmax_dist:
         (
@@ -23,9 +24,9 @@ def proccess_file(image, filename, cell_size, output_writer):
         output_writer.double_print("Min Distance " + str(min_distance))
         output_writer.double_print(
             "Min Distance Cells: "
-            + str(min_distance_cells[0])
+            + str(min_distance_cells[0].id)
             + " "
-            + str(min_distance_cells[1])
+            + str(min_distance_cells[1].id)
         )
 
         min_dist_c1_name = (
@@ -45,9 +46,9 @@ def proccess_file(image, filename, cell_size, output_writer):
         output_writer.double_print("Max Distance " + str(max_distance))
         output_writer.double_print(
             "Max Distance Cells: "
-            + str(max_distance_cells[0])
+            + str(max_distance_cells[0].id)
             + " "
-            + str(max_distance_cells[1])
+            + str(max_distance_cells[1].id)
         )
 
         dist_cell_dir = "output\\" + filename[0:-4] + "\\dist_cells"
@@ -74,15 +75,16 @@ def proccess_file(image, filename, cell_size, output_writer):
     single_image.find_k_means_clusters_from_hist()
 
     for cluster in single_image.clusters:
+        # print(str(cluster.id))
         cluster_dir = "output\\" + filename[0:-4] + "\\clusters\\" + str(cluster.id)
         os.mkdir(cluster_dir)
 
-        for i in range(len(cluster.cell_list)):
+        for i in range(len(cluster.cells)):
             cv2.imwrite(
                 os.path.join(
-                    cluster_dir, "cell" + str(cluster.cell_list[i].id) + ".jpg"
+                    cluster_dir, "cell" + str(cluster.cells[i].id) + ".jpg"
                 ),
-                cluster.cell_list[i].image,
+                cluster.cells[i].image,
             )
 
     return single_image
@@ -102,7 +104,7 @@ output_writer = OutputWriter("output\\output.txt")
 #     q_minmax_dist = False
 q_minmax_dist = True
 
-directory = r"datasets\testing"
+directory = r"datasets\example_rostock_soda_rgb\images"
 
 single_image_lst = []
 for filename in os.listdir(directory):
@@ -130,6 +132,7 @@ for filename in os.listdir(directory):
 output_writer.double_print("")
 output_writer.double_print("Analyzation of clusters through images")
 
-analyze(single_image_lst, output_writer)
+config = Config(0.5, 0.7)
+analyze(single_image_lst, len(single_image_lst[0].cells), config, output_writer)
 
 output_writer.close()
