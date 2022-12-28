@@ -2,9 +2,8 @@ class Cluster:
     id = 0
     cell_list = []
 
-    def __init__(self, id, cell_list):
+    def __init__(self, id):
         self.id = id
-        self.cell_list = cell_list
 
     def add_cell(self, cell):
         self.cell_list.append(cell)

@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.cluster import KMeans
 from cell import Cell
 from cluster import Cluster
@@ -21,6 +22,7 @@ class SingleImage:
                     (i - 1) * cell_size : i * cell_size,
                     (j - 1) * cell_size : j * cell_size,
                 ]
+
                 cell = Cell(id, cell_image)
                 self.cells.append(cell)
 
@@ -47,7 +49,7 @@ class SingleImage:
 
                 distance = cell1.find_hist_dist(cell2)
 
-                distances[[cell1, cell2]] = distance
+                distances[(cell1, cell2)] = distance
 
                 if distance < min_distance:
                     min_distance = distance
@@ -69,22 +71,53 @@ class SingleImage:
 
     def find_k_means_clusters_from_hist(self):
         cell_histograms = []
+        cell_ids = {}
+        x = 0
         for cell in self.cells:
             cell_histograms.append(cell.histogram)
+            print(type(cell.histogram))
+            cell_ids[x] = cell
+            x += 1
 
-        wcss = []
-        for i in range(1, 11):
-            k_means = KMeans(n_clusters=i, init="k-means++", random_state=42)
-            k_means.fit(cell_histograms)
-            wcss.append(k_means.inertia_)
+        # num_clusters = 4 # turn this into a function paramter later
+        # criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+        # _, labels, _ = cv2.kmeans(cell_histograms, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+
+        # wcss = []
+        # for i in range(1, 11):
+        #     k_means = KMeans(n_clusters=i, init="k-means++", random_state=42)
+        #     k_means.fit(cell_histograms)
+        #     wcss.append(k_means.inertia_)
 
         # plt.plot(np.arange(1,11),wcss)
         # plt.xlabel('Clusters')
         # plt.ylabel('SSE')
         # plt.show()
 
-        k_means_optimum = KMeans(n_clusters=4, init="k-means++", random_state=42)
-        y = list(map(int, k_means_optimum.fit_predict(cell_histograms)))
+        x = KMeans(n_clusters=4, init="k-means++", random_state=42).fit(cell_histograms)
+        # x = k_means_optimum.fit(cell_histograms)
+        # y = list(map(int, x))
 
-        for k in range(len(y)):
-            self.clusters.append(Cluster(k, y[k]))
+        cluster_id_to_cluster = {}
+        for k in range(len(x.labels_)):
+            cluster_id = x.labels_[k]
+            if cluster_id not in cluster_id_to_cluster:
+                new_cluster = Cluster(cluster_id)
+                cluster_id_to_cluster[cluster_id] = new_cluster
+                self.clusters.append(new_cluster)
+            cluster_id_to_cluster[cluster_id].add_cell(cell_ids[k])
+
+        # ids = []
+
+        # for k in range(len(y)):
+        # k+1 = id of cell
+        # y[k] = id of cluster for that cell
+
+        # print(k + 1, y[k])
+
+        # if y[k] not in ids:  # new cluster, y[k] is the id of the cluster
+        #     ids.append(y[k])
+        #     self.clusters.append(Cluster(y[k], [cell_id_to_cell[k + 1]]))
+
+        # else:
+        #     self.clusters[y[k]].add_cell(cell_id_to_cell[k + 1])

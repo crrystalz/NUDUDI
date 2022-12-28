@@ -7,7 +7,7 @@ class Cell:
     image = None
     histogram = None
 
-    def __init__(self, image, id):
+    def __init__(self, id, image):
         self.id = id
         self.image = image
         self.histogram = self.compute_histogram()
@@ -28,6 +28,9 @@ class Cell:
     def compute_histogram(self):
         image = self.image
 
+        # hist = cv2.calcHist([image], [1, 2, 0], None, [16, 16, 16], [0, 256, 0, 256, 0, 256])
+        # hist = hist.flatten()
+
         green_hist = cv2.calcHist([image], [1], None, [16], [0, 256])
         red_hist = cv2.calcHist([image], [2], None, [16], [0, 256])
         blue_hist = cv2.calcHist([image], [0], None, [16], [0, 256])
@@ -36,13 +39,7 @@ class Cell:
         red_hist = [x.tolist()[0] for x in red_hist]
         blue_hist = [x.tolist()[0] for x in blue_hist]
 
-        hist = []
-        for k in red_hist:
-            hist.append(k)
-        for k in green_hist:
-            hist.append(k)
-        for k in blue_hist:
-            hist.append(k)
+        hist = np.array(green_hist + red_hist + blue_hist)
 
         return hist
 
