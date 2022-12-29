@@ -94,6 +94,8 @@ for root, dirs, files in os.walk("output\\"):
     for d in dirs:
         shutil.rmtree(os.path.join(root, d))
 
+config = Config(300, 0.5, 0.7)
+
 output_writer = OutputWriter("output\\output.txt")
 
 # if input("Would you like to view the minimum and maximum distance between cells, and for those cells to be saved to the output folder? (y/n)").lower() == "y":
@@ -123,7 +125,7 @@ for filename in os.listdir(directory):
 
         output_writer.double_print(f)
 
-        single_image = proccess_file(src_img, filename, 300, output_writer)
+        single_image = proccess_file(src_img, filename, config.cell_size, output_writer)
 
         hierarchical_cluster_cells(single_image)
 
@@ -132,7 +134,6 @@ for filename in os.listdir(directory):
 output_writer.double_print("")
 output_writer.double_print("Analyzation of clusters through images")
 
-config = Config(0.5, 0.7)
 analyze(single_image_lst, len(single_image_lst[0].cells), config, output_writer)
 
 output_writer.close()
