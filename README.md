@@ -1,6 +1,15 @@
 # 🖼️ NUDUDI [WIP]
-Non-Uniformity Detection Using Drone Imagery (NUDUDI) encompasses several tools that can be used to detect anomalys in an image or several images over a period of time/
+Non-Uniformity Detection Using Drone Imagery (NUDUDI) encompasses several tools that can be used to detect anomalys in an image or several images over a period of time.
 
+### Libraries Used:
+- numpy
+- cv2
+- scipy
+- matplotlib
+- os
+- shutil
+- PIL
+- sklearn
 
 Powered by Python 3.11
 <br>
