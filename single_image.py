@@ -6,7 +6,7 @@ from cluster import Cluster
 
 class SingleImage:
     cells = []
-    clusters = []
+    clusters = []  # divide into hierarchial and kmeans attributes
     image = None
     filename = ""
 
@@ -90,7 +90,7 @@ class SingleImage:
             cell_ids[x] = cell
             x += 1
 
-        model = KMeans(n_clusters=4, init="k-means++", random_state=42)
+        model = KMeans(n_clusters=4, init="k-means++", random_state=42, n_init = 10)
         model.fit(cell_histograms)
         predicted_labels = model.predict(cell_histograms)
 

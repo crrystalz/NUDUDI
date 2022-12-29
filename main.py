@@ -81,7 +81,7 @@ def proccess_file(image, filename, cell_size, output_writer):
 
         for i in range(len(cluster.cells)):
             cv2.imwrite(
-                os.path.join(cluster_dir, "cell" + str(cluster.cells[i].id) + ".jpg"),
+                os.path.join(cluster_dir, "cell_" + str(cluster.cells[i].id) + ".jpg"),
                 cluster.cells[i].image,
             )
 
@@ -127,7 +127,7 @@ for filename in os.listdir(directory):
 
         single_image = proccess_file(src_img, filename, config.cell_size, output_writer)
 
-        hierarchical_cluster_cells(single_image)
+        hierarchical_cluster_cells(single_image, output_writer)
 
         single_image_lst.append(single_image)
 

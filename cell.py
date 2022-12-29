@@ -6,6 +6,10 @@ class Cell:
     id = 0
     image = None
     histogram = None
+    left = None
+    top = None
+    width = None
+    height = None
 
     def __init__(self, id, image):
         self.id = id
