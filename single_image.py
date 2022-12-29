@@ -37,13 +37,11 @@ class SingleImage:
         for cluster in self.clusters:
             if cluster.has_cell(cell_id):
                 return cluster
-        
+
         return None
 
     def average_color_of_cells(self):
-        # find average color of each cell
-        # store in a list
-        # save the average color image to a folder called cell_avg_color_images
+        # find average color of each cell -> store in a list -> save the average color image to a folder called cell_avg_color_images
         pass
 
     def find_cell_distances(self):

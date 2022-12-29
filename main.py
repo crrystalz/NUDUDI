@@ -1,11 +1,11 @@
 import os
-import numpy as np
 import shutil
 import cv2
 
 from utils import OutputWriter
 from config import Config
 from single_image import SingleImage
+from hierarchial_clustering import hierarchical_cluster_cells
 from analyze import analyze
 
 
@@ -81,9 +81,7 @@ def proccess_file(image, filename, cell_size, output_writer):
 
         for i in range(len(cluster.cells)):
             cv2.imwrite(
-                os.path.join(
-                    cluster_dir, "cell" + str(cluster.cells[i].id) + ".jpg"
-                ),
+                os.path.join(cluster_dir, "cell" + str(cluster.cells[i].id) + ".jpg"),
                 cluster.cells[i].image,
             )
 
@@ -104,7 +102,7 @@ output_writer = OutputWriter("output\\output.txt")
 #     q_minmax_dist = False
 q_minmax_dist = True
 
-directory = r"datasets\example_rostock_soda_rgb\images"
+directory = r"E:\nududi_datasets\testing"
 
 single_image_lst = []
 for filename in os.listdir(directory):
@@ -126,6 +124,8 @@ for filename in os.listdir(directory):
         output_writer.double_print(f)
 
         single_image = proccess_file(src_img, filename, 300, output_writer)
+
+        hierarchical_cluster_cells(single_image)
 
         single_image_lst.append(single_image)
 

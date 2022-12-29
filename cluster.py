@@ -6,7 +6,6 @@ class Cluster:
         self.id = id
         self.cells = []
 
-
     def add_cell(self, cell):
         self.cells.append(cell)
 
@@ -28,7 +27,7 @@ class Cluster:
 
         for c in self.cells:
             s1.add(c.id)
-        
+
         for c in other_cluster.cells:
             s2.add(c.id)
 
