@@ -45,6 +45,7 @@ class SingleImage:
             if cell.id == cell_id:
                 return cell
 
+        print("Cell not found: " + cell_id)
         return None
     
     def find_cluster_from_cell(self, cluster_type, cell_id):
@@ -111,7 +112,13 @@ class SingleImage:
                 cluster_id_to_cluster[cluster_id] = new_cluster
                 self.kmeans_clusters.append(new_cluster)
 
-            cluster_id_to_cluster[cluster_id].add_cell(self.find_cell_from_id(k))
+            (h, w) = self.image.shape[:2]
+            num_columns = w // config.cell_size
+
+            row = (k // num_columns) + 1
+            column = (k % num_columns) + 1
+
+            cluster_id_to_cluster[cluster_id].add_cell(self.find_cell_from_id(str(row) + "-" + str(column)))
 
 
         hierarchial_clusters_v, linkage_matrix = hierarchical_clustering(self, config, output_writer)
@@ -123,9 +130,11 @@ class SingleImage:
                 cell = self.find_cell_from_id(cell_id)
                 hierarchial_cluster.add_cell(cell)
 
-        self.output_clusters(self.filename, linkage_matrix)
+        self.output_clusters(linkage_matrix)
 
-    def output_clusters(self, filename, linkage_matrix):
+    def output_clusters(self, linkage_matrix):
+        filename = self.filename
+        
         # Output for kmeans clustering  
         for cluster in self.kmeans_clusters:
             # print(str(cluster.id))
@@ -183,20 +192,14 @@ class SingleImage:
         )
         os.mkdir(dir_to_make)
 
-        clusters = self.hierarchical_clusters
+        clusters = self.hierarchial_clusters
 
-        print("len clusters", len(clusters))
         for i in range(len(clusters)):
             cluster_dir =  ("output\\" + filename[0:-4] + "\\hierarchical_clustering\\clusters\\" + str(i) + "\\")
             os.mkdir(cluster_dir)
 
-            for cell_id in clusters[i]:
-                for cell in self.cells:
-                    if cell.id == cell_id:
-                        image = cell.image
-                        break
-
+            for cell in clusters[i].cells:
                 cv2.imwrite(
-                    os.path.join(cluster_dir, "cell_" + str(cell_id) + ".jpg"),
-                    image,
+                    os.path.join(cluster_dir, "cell_" + str(cell.id) + ".jpg"),
+                    cell.image,
                 )
