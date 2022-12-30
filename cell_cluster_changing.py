@@ -1,8 +1,8 @@
 def cell_change_between_two_image(
     cell_id, single_image1, single_image2, min_cluster_dist
 ):
-    cell_c1 = single_image1.find_cluster_from_cell(cell_id)
-    cell_c2 = single_image2.find_cluster_from_cell(cell_id)
+    cell_c1 = single_image1.find_cluster_from_cell("kmeans", cell_id)
+    cell_c2 = single_image2.find_cluster_from_cell("kmeans", cell_id)
 
     cell_clusters_dist = cell_c1.find_dist(cell_c2)
 

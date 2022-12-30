@@ -9,11 +9,6 @@ class Cluster:
     def add_cell(self, cell):
         self.cells.append(cell)
 
-    def find_cell_from_id(self, cell_id):
-        for cell in self.cells:
-            if cell.id == cell_id:
-                return cell
-
     def has_cell(self, cell_id):
         for c in self.cells:
             if c.id == cell_id:

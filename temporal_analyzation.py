@@ -1,6 +1,6 @@
 import numpy as np
 from hungarian_algorithm import hungarian_algorithm, ans_calculation
-from temporal_change import find_cells_changed_cluster
+from cell_cluster_changing import find_cells_changed_cluster
 
 
 def linear_assignment_problem(single_image_lst, output_writer):
@@ -60,14 +60,14 @@ def analyze(single_image_lst, num_cells, config, output_writer):
         num_cells, single_image_lst, min_cell_cluster_change_ratio, min_cluster_dist
     )
 
-    output_writer.double_print(
-        "Number of likely changed cells: " + str(len(likely_changed_cells))
-    )
-    output_writer.double_print("Likely Changed Cells:")
-    [output_writer.double_print(x) for x in likely_changed_cells]
-    output_writer.double_print("")
-    output_writer.double_print("Cell Clusters Data:")
-    [
-        output_writer.double_print(str(x) + " " + str(cell_clusters_data[x]))
-        for x in cell_clusters_data.keys()
-    ]
+    # output_writer.double_print(
+    #     "Number of likely changed cells: " + str(len(likely_changed_cells))
+    # )
+    # output_writer.double_print("Likely Changed Cells:")
+    # [output_writer.double_print(x) for x in likely_changed_cells]
+    # output_writer.double_print("")
+    # output_writer.double_print("Cell Clusters Data:")
+    # [
+    #     output_writer.double_print(str(x) + " " + str(cell_clusters_data[x]))
+    #     for x in cell_clusters_data.keys()
+    # ]

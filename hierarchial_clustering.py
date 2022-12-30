@@ -1,8 +1,5 @@
-import os
 import numpy as np
-import matplotlib.pyplot as plt
-import cv2
-from scipy.cluster.hierarchy import linkage, dendrogram
+from scipy.cluster.hierarchy import linkage
 
 
 def adjacent_cell_check_distance_function(hist1, hist2):
@@ -18,7 +15,7 @@ def adjacent_cell_check_distance_function(hist1, hist2):
         return 999999999999
 
 
-def extract_clusters(linkage_matrix, cell_ids):
+def extract_clusters(linkage_matrix, cell_ids, hierarchial_cluster_min_dist):
     # Each cell starts in its own cluster
     original_clusters = []
     for i in range(len(linkage_matrix) + 1):
@@ -32,7 +29,7 @@ def extract_clusters(linkage_matrix, cell_ids):
         # 4 - size of the merged cluster
         
         distance = float(step_log[2])
-        if distance > 50000:
+        if distance > hierarchial_cluster_min_dist:
             break
 
         cluster1_id = int(step_log[0])
@@ -58,11 +55,10 @@ def extract_clusters(linkage_matrix, cell_ids):
         if i not in old_clusters:
             clusters.append([cell_ids[x] for x in original_clusters[i]])
 
-    print("dumb", clusters)
     return clusters
 
 
-def hierarchical_cluster_cells(single_image, output_writer):
+def hierarchical_clustering(single_image, config, output_writer):
     histograms = []
     cell_ids = []
     for k in range(len(single_image.cells)):
@@ -85,66 +81,6 @@ def hierarchical_cluster_cells(single_image, output_writer):
         histograms, method="single", metric=adjacent_cell_check_distance_function
     )
 
-    # Plot the dendrogram
-    plt.figure()
-    dendrogram(linkage_matrix, labels=[cell.id for cell in single_image.cells])
+    clusters = extract_clusters(linkage_matrix, cell_ids, config.hierarchial_cluster_min_dist)
 
-    plt.xticks(fontsize = 4, rotation = 45)
-
-    plt.gca().margins(x=0)
-    plt.gcf().canvas.draw()
-    tl = plt.gca().get_xticklabels()
-    maxsize = max([t.get_window_extent().width for t in tl])
-    m = 0.2  # inch margin
-    s = maxsize / plt.gcf().dpi * len(linkage_matrix) + 2 * m
-    margin = m / plt.gcf().get_size_inches()[0]
-
-    plt.gcf().subplots_adjust(left=margin, right=1.0 - margin)
-    plt.gcf().set_size_inches(s, plt.gcf().get_size_inches()[1])
-
-    # plt.show()
-
-    # Save the dendrogram
-    dir_to_make = (
-        "output\\" + single_image.filename[0:-4] + "\\hierarchical_clustering\\"
-    )
-    svg_dir = (
-        "output\\"
-        + single_image.filename[0:-4]
-        + "\\hierarchical_clustering\\dendrogram.svg"
-    )
-    png_dir = (
-        "output\\"
-        + single_image.filename[0:-4]
-        + "\\hierarchical_clustering\\dendrogram.png"
-    )
-
-    os.mkdir(dir_to_make)
-    plt.savefig(svg_dir)
-    plt.savefig(png_dir, dpi=500)
-
-    # Extracting clusters made with hierarchical clustering, and then saving these clusters in output folder
-    clusters = extract_clusters(linkage_matrix, cell_ids)
-
-    dir_to_make = (
-        "output\\" + single_image.filename[0:-4] + "\\hierarchical_clustering\\clusters\\"
-    )
-    os.mkdir(dir_to_make)
-
-    print("len clusters", len(clusters))
-    for i in range(len(clusters)):
-        cluster_dir =  ("output\\" + single_image.filename[0:-4] + "\\hierarchical_clustering\\clusters\\" + str(i) + "\\")
-        os.mkdir(cluster_dir)
-
-        for cell_id in clusters[i]:
-            for cell in single_image.cells:
-                if cell.id == cell_id:
-                    image = cell.image
-                    break
-
-            cv2.imwrite(
-                os.path.join(cluster_dir, "cell_" + str(cell_id) + ".jpg"),
-                image,
-            )
-    
-    # print(clusters)
+    return clusters, linkage_matrix

@@ -5,88 +5,7 @@ import cv2
 from utils import OutputWriter
 from config import Config
 from single_image import SingleImage
-from hierarchial_clustering import hierarchical_cluster_cells
-from analyze import analyze
-
-
-def proccess_file(image, filename, cell_size, output_writer):
-    single_image = SingleImage(image, cell_size, filename)
-
-    if q_minmax_dist:
-        (
-            min_distance_cells,
-            min_distance,
-            max_distance_cells,
-            max_distance,
-            distances,
-        ) = single_image.find_cell_distances()
-
-        output_writer.double_print("Min Distance " + str(min_distance))
-        output_writer.double_print(
-            "Min Distance Cells: "
-            + str(min_distance_cells[0].id)
-            + " "
-            + str(min_distance_cells[1].id)
-        )
-
-        min_dist_c1_name = (
-            "Min Dist Cell 1 (Cell " + str(min_distance_cells[0].id) + ")"
-        )
-        min_dist_c2_name = (
-            "Min Dist Cell 2 (Cell " + str(min_distance_cells[1].id) + ")"
-        )
-
-        max_dist_c1_name = (
-            "Max Dist Cell 1 (Cell " + str(max_distance_cells[0].id) + ")"
-        )
-        max_dist_c2_name = (
-            "Max Dist Cell 2 (Cell " + str(max_distance_cells[1].id) + ")"
-        )
-
-        output_writer.double_print("Max Distance " + str(max_distance))
-        output_writer.double_print(
-            "Max Distance Cells: "
-            + str(max_distance_cells[0].id)
-            + " "
-            + str(max_distance_cells[1].id)
-        )
-
-        dist_cell_dir = "output\\" + filename[0:-4] + "\\dist_cells"
-        cv2.imwrite(
-            os.path.join(dist_cell_dir, min_dist_c1_name + ".jpg"),
-            min_distance_cells[0].image,
-        )
-
-        cv2.imwrite(
-            os.path.join(dist_cell_dir, min_dist_c2_name + ".jpg"),
-            min_distance_cells[1].image,
-        )
-
-        cv2.imwrite(
-            os.path.join(dist_cell_dir, max_dist_c1_name + ".jpg"),
-            max_distance_cells[0].image,
-        )
-
-        cv2.imwrite(
-            os.path.join(dist_cell_dir, max_dist_c2_name + ".jpg"),
-            max_distance_cells[1].image,
-        )
-
-    single_image.find_k_means_clusters_from_hist()
-
-    for cluster in single_image.clusters:
-        # print(str(cluster.id))
-        cluster_dir = "output\\" + filename[0:-4] + "\\clusters\\" + str(cluster.id)
-        os.mkdir(cluster_dir)
-
-        for i in range(len(cluster.cells)):
-            cv2.imwrite(
-                os.path.join(cluster_dir, "cell_" + str(cluster.cells[i].id) + ".jpg"),
-                cluster.cells[i].image,
-            )
-
-    return single_image
-
+from temporal_analyzation import analyze
 
 for root, dirs, files in os.walk("output\\"):
     for f in files:
@@ -94,7 +13,7 @@ for root, dirs, files in os.walk("output\\"):
     for d in dirs:
         shutil.rmtree(os.path.join(root, d))
 
-config = Config(300, 0.5, 0.7)
+config = Config(300, 0.5, 0.7, 50000)
 
 output_writer = OutputWriter("output\\output.txt")
 
@@ -125,9 +44,69 @@ for filename in os.listdir(directory):
 
         output_writer.double_print(f)
 
-        single_image = proccess_file(src_img, filename, config.cell_size, output_writer)
+        single_image = SingleImage(src_img, config.cell_size, filename)
 
-        hierarchical_cluster_cells(single_image, output_writer)
+        if q_minmax_dist:
+            (
+                min_distance_cells,
+                min_distance,
+                max_distance_cells,
+                max_distance,
+                distances,
+            ) = single_image.find_cell_distances()
+
+            output_writer.double_print("Min Distance " + str(min_distance))
+            output_writer.double_print(
+                "Min Distance Cells: "
+                + str(min_distance_cells[0].id)
+                + " "
+                + str(min_distance_cells[1].id)
+            )
+
+            min_dist_c1_name = (
+                "Min Dist Cell 1 (Cell " + str(min_distance_cells[0].id) + ")"
+            )
+            min_dist_c2_name = (
+                "Min Dist Cell 2 (Cell " + str(min_distance_cells[1].id) + ")"
+            )
+
+            max_dist_c1_name = (
+                "Max Dist Cell 1 (Cell " + str(max_distance_cells[0].id) + ")"
+            )
+            max_dist_c2_name = (
+                "Max Dist Cell 2 (Cell " + str(max_distance_cells[1].id) + ")"
+            )
+
+            output_writer.double_print("Max Distance " + str(max_distance))
+            output_writer.double_print(
+                "Max Distance Cells: "
+                + str(max_distance_cells[0].id)
+                + " "
+                + str(max_distance_cells[1].id)
+            )
+
+            dist_cell_dir = "output\\" + filename[0:-4] + "\\dist_cells"
+            cv2.imwrite(
+                os.path.join(dist_cell_dir, min_dist_c1_name + ".jpg"),
+                min_distance_cells[0].image,
+            )
+
+            cv2.imwrite(
+                os.path.join(dist_cell_dir, min_dist_c2_name + ".jpg"),
+                min_distance_cells[1].image,
+            )
+
+            cv2.imwrite(
+                os.path.join(dist_cell_dir, max_dist_c1_name + ".jpg"),
+                max_distance_cells[0].image,
+            )
+
+            cv2.imwrite(
+                os.path.join(dist_cell_dir, max_dist_c2_name + ".jpg"),
+                max_distance_cells[1].image,
+            )
+
+        single_image.find_clusters(config, output_writer)
 
         single_image_lst.append(single_image)
 

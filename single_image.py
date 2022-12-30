@@ -1,12 +1,18 @@
-import numpy as np
-from sklearn.cluster import KMeans
+import os
+import matplotlib.pyplot as plt
+import cv2
+from scipy.cluster.hierarchy import dendrogram
+
 from cell import Cell
 from cluster import Cluster
+from k_means_clustering import find_k_means_clusters_from_hist
+from hierarchial_clustering import hierarchical_clustering
 
 
 class SingleImage:
     cells = []
-    clusters = []  # divide into hierarchial and kmeans attributes
+    kmeans_clusters = []
+    hierarchial_clusters = []
     image = None
     filename = ""
 
@@ -29,14 +35,27 @@ class SingleImage:
                 cell = Cell(id, cell_image)
                 self.cells.append(cell)
 
-        self.clusters = []
+        self.kmeans_clusters = []
+        self.hierarchial_clusters = []
         self.image = image
         self.filename = filename
 
-    def find_cluster_from_cell(self, cell_id):
-        for cluster in self.clusters:
-            if cluster.has_cell(cell_id):
-                return cluster
+    def find_cell_from_id(self, cell_id):
+        for cell in self.cells:
+            if cell.id == cell_id:
+                return cell
+
+        return None
+    
+    def find_cluster_from_cell(self, cluster_type, cell_id):
+        if cluster_type == "kmeans":
+            for cluster in self.kmeans_clusters:
+                if cluster.has_cell(cell_id):
+                    return cluster
+        elif cluster_type == "hierarchial":
+            for cluster in self.hierarchial_clusters:
+                if cluster.has_cell(cell_id):
+                    return cluster
 
         return None
 
@@ -81,25 +100,103 @@ class SingleImage:
             distances,
         )
 
-    def find_k_means_clusters_from_hist(self):
-        cell_histograms = []
-        cell_ids = {}
-        x = 0
-        for cell in self.cells:
-            cell_histograms.append(cell.histogram)
-            cell_ids[x] = cell
-            x += 1
-
-        model = KMeans(n_clusters=4, init="k-means++", random_state=42, n_init = 10)
-        model.fit(cell_histograms)
-        predicted_labels = model.predict(cell_histograms)
-
+    def find_clusters(self, config, output_writer):
+        predicted_labels = find_k_means_clusters_from_hist(self)
+        
         cluster_id_to_cluster = {}
         for k in range(len(predicted_labels)):
             cluster_id = predicted_labels[k]
             if cluster_id not in cluster_id_to_cluster.keys():
                 new_cluster = Cluster(cluster_id)
                 cluster_id_to_cluster[cluster_id] = new_cluster
-                self.clusters.append(new_cluster)
+                self.kmeans_clusters.append(new_cluster)
 
-            cluster_id_to_cluster[cluster_id].add_cell(cell_ids[k])
+            cluster_id_to_cluster[cluster_id].add_cell(self.find_cell_from_id(k))
+
+
+        hierarchial_clusters_v, linkage_matrix = hierarchical_clustering(self, config, output_writer)
+        for i in range(len(hierarchial_clusters_v)):
+            hierarchial_cluster = Cluster(i)
+            self.hierarchial_clusters.append(hierarchial_cluster)
+
+            for cell_id in hierarchial_clusters_v[i]:
+                cell = self.find_cell_from_id(cell_id)
+                hierarchial_cluster.add_cell(cell)
+
+        self.output_clusters(self.filename, linkage_matrix)
+
+    def output_clusters(self, filename, linkage_matrix):
+        # Output for kmeans clustering  
+        for cluster in self.kmeans_clusters:
+            # print(str(cluster.id))
+            cluster_dir = "output\\" + filename[0:-4] + "\\clusters\\" + str(cluster.id)
+            os.mkdir(cluster_dir)
+
+            for i in range(len(cluster.cells)):
+                cv2.imwrite(
+                    os.path.join(cluster_dir, "cell_" + str(cluster.cells[i].id) + ".jpg"),
+                    cluster.cells[i].image,
+                )
+
+        # Output for hierarchial clustering
+
+        # Plot the dendrogram
+        plt.figure()
+        dendrogram(linkage_matrix, labels=[cell.id for cell in self.cells])
+
+        plt.xticks(fontsize = 4, rotation = 45)
+
+        plt.gca().margins(x=0)
+        plt.gcf().canvas.draw()
+        tl = plt.gca().get_xticklabels()
+        maxsize = max([t.get_window_extent().width for t in tl])
+        m = 0.2  # inch margin
+        s = maxsize / plt.gcf().dpi * len(linkage_matrix) + 2 * m
+        margin = m / plt.gcf().get_size_inches()[0]
+
+        plt.gcf().subplots_adjust(left=margin, right=1.0 - margin)
+        plt.gcf().set_size_inches(s, plt.gcf().get_size_inches()[1])
+
+        # plt.show()
+
+        # Save the dendrogram
+        dir_to_make = (
+            "output\\" + filename[0:-4] + "\\hierarchical_clustering\\"
+        )
+        svg_dir = (
+            "output\\"
+            + filename[0:-4]
+            + "\\hierarchical_clustering\\dendrogram.svg"
+        )
+        png_dir = (
+            "output\\"
+            + filename[0:-4]
+            + "\\hierarchical_clustering\\dendrogram.png"
+        )
+
+        os.mkdir(dir_to_make)
+        plt.savefig(svg_dir)
+        plt.savefig(png_dir, dpi=500)
+
+        dir_to_make = (
+            "output\\" + filename[0:-4] + "\\hierarchical_clustering\\clusters\\"
+        )
+        os.mkdir(dir_to_make)
+
+        clusters = self.hierarchical_clusters
+
+        print("len clusters", len(clusters))
+        for i in range(len(clusters)):
+            cluster_dir =  ("output\\" + filename[0:-4] + "\\hierarchical_clustering\\clusters\\" + str(i) + "\\")
+            os.mkdir(cluster_dir)
+
+            for cell_id in clusters[i]:
+                for cell in self.cells:
+                    if cell.id == cell_id:
+                        image = cell.image
+                        break
+
+                cv2.imwrite(
+                    os.path.join(cluster_dir, "cell_" + str(cell_id) + ".jpg"),
+                    image,
+                )
