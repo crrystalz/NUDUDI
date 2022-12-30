@@ -8,9 +8,13 @@ from PIL import Image
 # which is the smallest polygon that encloses all rectangles within it.
 #
 
+
 def minimum_bounding_polygon(rectangles):
     # create a list of polygons from the rectangles
-    polygons = [Polygon([(r[0], r[1]), (r[0], r[3]), (r[2], r[3]), (r[2], r[1])]) for r in rectangles]
+    polygons = [
+        Polygon([(r[0], r[1]), (r[0], r[3]), (r[2], r[3]), (r[2], r[1])])
+        for r in rectangles
+    ]
 
     # create a multipolygon from the polygons
     multipoly = MultiPolygon(polygons)
@@ -19,14 +23,14 @@ def minimum_bounding_polygon(rectangles):
     return multipoly.convex_hull
 
 
-def draw_polygon_on_image(polygons, image) -> None:
+def draw_polygon_on_image(polygons, image, filename) -> None:
     # Convert the image to a NumPy array
     img_array = np.array(image)
 
     # Create a Matplotlib figure and axes
+    plt.figure()
     fig, ax = plt.subplots()
 
-    # Display the image
     ax.imshow(img_array)
 
     for polygon in polygons:
@@ -36,11 +40,13 @@ def draw_polygon_on_image(polygons, image) -> None:
         # Plot the polygon on top of the image
         ax.plot(x, y)
 
+    dir = ("output\\" + filename[0:-4] + "\\cluster_overlay.png")
+    
     # Show the plot
-    plt.show()
+    plt.savefig(dir)
 
 
-def x(clusters, image_file):
+def x(clusters, image_file, filename):
     polygons = []
     for cluster in clusters:
         cell_rectangles = []
@@ -48,9 +54,6 @@ def x(clusters, image_file):
             cell_rectangle = cell.get_rectangle()
             cell_rectangles.append(cell_rectangle)
 
-        
         polygons.append(minimum_bounding_polygon(cell_rectangles))
 
-    draw_polygon_on_image(polygons, image_file)
-
-        
+    draw_polygon_on_image(polygons, image_file, filename)

@@ -14,15 +14,19 @@ for root, dirs, files in os.walk("output\\"):
     for d in dirs:
         shutil.rmtree(os.path.join(root, d))
 
-config = Config(50, 0.5, 0.7, 50000)
+config = Config()
+config.minmax_dist = False
+config.hierarchial_clustering = True
+config.kmeans_clustering = False
+config.cell_size = 75
+config.min_cell_cluster_change_ratio = 0.5
+config.min_cluster_dist = 0.7
+config.hierarchial_cluster_min_dist = 3085
+
+# Optimal hierarchial cluster min dists:
+# 150 - 14400
 
 output_writer = OutputWriter("output\\output.txt")
-
-# if input("Would you like to view the minimum and maximum distance between cells, and for those cells to be saved to the output folder? (y/n)").lower() == "y":
-#     q_minmax_dist = True
-# else:
-#     q_minmax_dist = False
-q_minmax_dist = True
 
 directory = r"E:\nududi_datasets\testing"
 
@@ -33,10 +37,7 @@ for filename in os.listdir(directory):
     file_output_dir = "output\\" + filename[0:-4]
     os.mkdir(file_output_dir)
 
-    file_output_dir = "output\\" + filename[0:-4] + "\\clusters"
-    os.mkdir(file_output_dir)
-
-    if q_minmax_dist:
+    if config.minmax_dist:
         file_output_dir = "output\\" + filename[0:-4] + "\\dist_cells"
         os.mkdir(file_output_dir)
 
@@ -47,7 +48,7 @@ for filename in os.listdir(directory):
 
         single_image = SingleImage(src_img, config.cell_size, filename)
 
-        if q_minmax_dist:
+        if config.minmax_dist:
             (
                 min_distance_cells,
                 min_distance,
@@ -108,9 +109,10 @@ for filename in os.listdir(directory):
             )
 
         linkage_matrix = single_image.find_clusters(config, output_writer)
-        single_image.output_clusters(linkage_matrix)
+        if config.hierarchial_clustering:
+            single_image.output_clusters(linkage_matrix, config)
 
-        x(single_image.kmeans_clusters, single_image.image)
+        x(single_image.hierarchial_clusters, single_image.image, filename)
 
         single_image_lst.append(single_image)
 

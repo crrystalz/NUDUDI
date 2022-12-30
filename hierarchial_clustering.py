@@ -21,13 +21,17 @@ def extract_clusters(linkage_matrix, cell_ids, hierarchial_cluster_min_dist):
     for i in range(len(linkage_matrix) + 1):
         original_clusters.append([i])
 
-    old_clusters = set()  # if clusters 1 and 2 get merged, then 1 and 2 are added to this set
-    for step_log in linkage_matrix:  # log of the stuff that happened in that step of merging
+    old_clusters = (
+        set()
+    )  # if clusters 1 and 2 get merged, then 1 and 2 are added to this set
+    for (
+        step_log
+    ) in linkage_matrix:  # log of the stuff that happened in that step of merging
         # 0 - cluster 1 id
         # 1 - cluster 2 id
         # 3 - distance of the two clusters
         # 4 - size of the merged cluster
-        
+
         distance = float(step_log[2])
         if distance > hierarchial_cluster_min_dist:
             break
@@ -81,6 +85,8 @@ def hierarchical_clustering(single_image, config, output_writer):
         histograms, method="single", metric=adjacent_cell_check_distance_function
     )
 
-    clusters = extract_clusters(linkage_matrix, cell_ids, config.hierarchial_cluster_min_dist)
+    clusters = extract_clusters(
+        linkage_matrix, cell_ids, config.hierarchial_cluster_min_dist
+    )
 
     return clusters, linkage_matrix

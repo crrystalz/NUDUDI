@@ -1,4 +1,9 @@
 class Config:
+    minmax_dist = None
+
+    hierarchial_clustering = None
+    kmeans_clustering = None
+
     cell_size = None
 
     # Ratio for how many changes in cluster a cell must have to be considered changed
@@ -7,9 +12,3 @@ class Config:
     min_cluster_dist = None
 
     hierarchial_cluster_min_dist = None
-
-    def __init__(self, cell_size, min_cell_cluster_change_ratio, min_cluster_dist, hierarchial_cluster_min_dist):
-        self.cell_size = cell_size
-        self.min_cell_cluster_change_ratio = min_cell_cluster_change_ratio
-        self.min_cluster_dist = min_cluster_dist
-        self.hierarchial_cluster_min_dist = hierarchial_cluster_min_dist
