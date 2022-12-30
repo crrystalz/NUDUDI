@@ -32,7 +32,7 @@ class SingleImage:
                     (j - 1) * cell_size : j * cell_size,
                 ]
 
-                cell = Cell(id, cell_image)
+                cell = Cell(id, cell_image, cell_size)
                 self.cells.append(cell)
 
         self.kmeans_clusters = []
@@ -130,15 +130,19 @@ class SingleImage:
                 cell = self.find_cell_from_id(cell_id)
                 hierarchial_cluster.add_cell(cell)
 
-        self.output_clusters(linkage_matrix)
+        return linkage_matrix
 
     def output_clusters(self, linkage_matrix):
         filename = self.filename
         
         # Output for kmeans clustering  
+        dir_to_make = "output\\" + filename[0:-4] + "\\kmeans_clustering\\"
+        os.mkdir(dir_to_make)
+        dir_to_make = "output\\" + filename[0:-4] + "\\kmeans_clustering\\clusters\\" 
+        os.mkdir(dir_to_make)
+
         for cluster in self.kmeans_clusters:
-            # print(str(cluster.id))
-            cluster_dir = "output\\" + filename[0:-4] + "\\clusters\\" + str(cluster.id)
+            cluster_dir = "output\\" + filename[0:-4] + "\\kmeans_clustering\\clusters\\" + str(cluster.id)
             os.mkdir(cluster_dir)
 
             for i in range(len(cluster.cells)):

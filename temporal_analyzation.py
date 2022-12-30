@@ -9,7 +9,7 @@ def linear_assignment_problem(single_image_lst, output_writer):
             # i and j are each a cluster list for a seperate image
 
             img_pair_clusters_dists = find_clusters_lists_dist(
-                single_image_lst[i].clusters, single_image_lst[j].clusters
+                single_image_lst[i].kmeans_clusters, single_image_lst[j].kmeans_clusters
             )
 
             # output_writer.double_print("")

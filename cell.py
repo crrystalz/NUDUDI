@@ -8,13 +8,17 @@ class Cell:
     histogram = None
     left = None
     top = None
-    width = None
-    height = None
+    size = None
 
-    def __init__(self, id, image):
+    def __init__(self, id, image, size):
         self.id = id
         self.image = image
         self.histogram = self.compute_histogram()
+        self.size = size
+
+        row, col = self.id.split("-")
+        self.top = int(row) * size
+        self.left = int(col) * size
 
     def find_average_color(self):
         average_color_row = np.average(self.image, axis=0)
@@ -52,3 +56,6 @@ class Cell:
         hist2 = other_cell.histogram
         distance = sum([(p - q) ** 2 for p, q in zip(hist1, hist2)]) ** 0.5
         return distance
+
+    def get_rectangle(self):
+        return (self.left, self.top, self.left + self.size, self.top + self.size)

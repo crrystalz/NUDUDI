@@ -6,6 +6,7 @@ from utils import OutputWriter
 from config import Config
 from single_image import SingleImage
 from temporal_analyzation import analyze
+from display import x
 
 for root, dirs, files in os.walk("output\\"):
     for f in files:
@@ -13,7 +14,7 @@ for root, dirs, files in os.walk("output\\"):
     for d in dirs:
         shutil.rmtree(os.path.join(root, d))
 
-config = Config(300, 0.5, 0.7, 50000)
+config = Config(50, 0.5, 0.7, 50000)
 
 output_writer = OutputWriter("output\\output.txt")
 
@@ -106,13 +107,16 @@ for filename in os.listdir(directory):
                 max_distance_cells[1].image,
             )
 
-        single_image.find_clusters(config, output_writer)
+        linkage_matrix = single_image.find_clusters(config, output_writer)
+        single_image.output_clusters(linkage_matrix)
+
+        x(single_image.kmeans_clusters, single_image.image)
 
         single_image_lst.append(single_image)
 
-output_writer.double_print("")
-output_writer.double_print("Analyzation of clusters through images")
+# output_writer.double_print("")
+# output_writer.double_print("Analyzation of clusters through images")
 
-analyze(single_image_lst, len(single_image_lst[0].cells), config, output_writer)
+# analyze(single_image_lst, len(single_image_lst[0].cells), config, output_writer)
 
-output_writer.close()
+# output_writer.close()
