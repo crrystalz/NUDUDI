@@ -57,6 +57,14 @@ def is_black(image, tolerance=10):
 
 
 def create_dataset(path_to_train_dir, output_dataset_dir):
+    for root, dirs, files in os.walk(output_dataset_dir):
+        for f in files:
+            os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))
+
+    print("Deleted previous files")
+    
     images_dir = os.path.join(path_to_train_dir, "images", "rgb")
     labels_dir = os.path.join(path_to_train_dir, "labels")
 
@@ -96,9 +104,10 @@ def create_dataset(path_to_train_dir, output_dataset_dir):
                         str(images_dir) + "\\" + file_name[:-3] + "jpg", f"{output_image_dir}\\{file_name}"
                     )
                 
-                anomalous_image = Image.open(f"{anomaly_dir}\\{file_name}").convert('L')
+                anomalous_image_bw = Image.open(f"{anomaly_dir}\\{file_name}").convert('L')
+                anomalous_image_rgb = Image.open(f"{output_image_dir}\\{file_name}")
                 overlay_anomalous_region_boundary(
-                    anomalous_image, f"{output_annotated_image_dir}/{file_name}"
+                    anomalous_image_bw, anomalous_image_rgb, f"{output_annotated_image_dir}/{file_name}"
                 )
                 count = count + 1
         print(anomaly_type + " count: " + str(count))
@@ -128,14 +137,15 @@ def get_anomaly_outline(anomalous_image):
 #
 # Overlays the anomalous region outline on the image.
 #
-def overlay_anomalous_region_boundary(anomalous_image, annotated_image_file_path):
-    x, y = get_anomaly_outline(anomalous_image)
-    img_array = np.array(anomalous_image)
+def overlay_anomalous_region_boundary(anomalous_image_bw, anomalous_image_rgb, annotated_image_file_path):
+    x, y = get_anomaly_outline(anomalous_image_bw)
+    img_array = np.array(anomalous_image_rgb)
     plt.figure()
     fig, ax = plt.subplots()
     ax.imshow(img_array)
-    ax.scatter(x, y)
+    ax.scatter(x, y, s = 1)
     plt.savefig(annotated_image_file_path)
+    plt.close()
 
 
 # combine_files("E:/nududi_datasets/testing2")
