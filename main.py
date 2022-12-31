@@ -18,10 +18,10 @@ config = Config()
 config.minmax_dist = False
 config.hierarchial_clustering = True
 config.kmeans_clustering = False
-config.cell_size = 75
+config.cell_size = 35
 config.min_cell_cluster_change_ratio = 0.5
 config.min_cluster_dist = 0.7
-config.hierarchial_cluster_min_dist = 3085
+config.hierarchial_cluster_min_dist = (3085)/5
 
 # Optimal hierarchial cluster min dists:
 # 150 - 14400
@@ -29,7 +29,7 @@ config.hierarchial_cluster_min_dist = 3085
 
 output_writer = OutputWriter("output\\output.txt")
 
-directory = r"E:\nududi_datasets\testing"
+directory = r"E:\nududi_datasets\testing5"
 
 single_image_lst = []
 for filename in os.listdir(directory):
