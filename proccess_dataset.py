@@ -1,7 +1,13 @@
 import os
 from PIL import Image
+import numpy as np
+import shutil
+import cv2
+import matplotlib.pyplot as plt
 
-# directory should be the full path to the downloaded "raw" directory
+# Type 1
+
+
 def combine_files(directory):
     for field_id in os.listdir(directory):
         combine_files_for_one_field(directory, field_id)
@@ -42,4 +48,98 @@ def combine_files_for_one_field(directory, field_id):
         rgb_image.save(f"{directory}/{field_id}/{flight_id}_rgb.tif")
 
 
-combine_files("E:/nududi_datasets/testing2")
+# Type 2
+
+
+def is_black(image, tolerance=10):
+    # Check if all pixels are within the tolerance of black (0)
+    return np.all(np.abs(image - 0) <= tolerance)
+
+
+def create_dataset(path_to_train_dir, output_dataset_dir):
+    images_dir = os.path.join(path_to_train_dir, "images", "rgb")
+    labels_dir = os.path.join(path_to_train_dir, "labels")
+
+    for anomaly_type in os.listdir(labels_dir):
+        anomaly_dir = os.path.join(labels_dir, anomaly_type)
+
+        # For each anomaly type, create a directory stucture
+        # like the following inside output_dataset_dir.
+        #
+        # output_dataset_dir
+        #                   |-- anomaly_type
+        #                                  |-- image
+        #                                  |-- annotated_image
+        output_anomaly_dir = os.path.join(output_dataset_dir, anomaly_type)
+        if not os.path.exists(output_anomaly_dir):
+            os.mkdir(output_anomaly_dir)
+
+        output_image_dir = os.path.join(output_anomaly_dir, "image")
+        if not os.path.exists(output_image_dir):
+            os.mkdir(output_image_dir)
+
+        output_annotated_image_dir = os.path.join(output_anomaly_dir, "annotated-image")
+        if not os.path.exists(output_annotated_image_dir):
+            os.mkdir(output_annotated_image_dir)
+
+        count = 0
+        for file_name in os.listdir(anomaly_dir):
+            image = cv2.imread(f"{anomaly_dir}\\{file_name}", cv2.IMREAD_GRAYSCALE)
+            if not is_black(image):
+                if os.path.exists(f"{images_dir}\\{file_name}"):
+                    # copy the image file into the output dir
+                    shutil.copy(
+                        f"{images_dir}\\{file_name}", f"{output_image_dir}\\{file_name}"
+                    )
+                else:
+                    shutil.copy(
+                        str(images_dir) + "\\" + file_name[:-3] + "jpg", f"{output_image_dir}\\{file_name}"
+                    )
+                
+                anomalous_image = Image.open(f"{anomaly_dir}\\{file_name}").convert('L')
+                overlay_anomalous_region_boundary(
+                    anomalous_image, f"{output_annotated_image_dir}/{file_name}"
+                )
+                count = count + 1
+        print(anomaly_type + " count: " + str(count))
+
+
+#
+# returns a list (x,y) corrdinates that define the boundary of
+# anomalous region.
+#
+def get_anomaly_outline(anomalous_image):
+    outline_x = []
+    outline_y = []
+    for x in range(1, anomalous_image.width - 1):
+        for y in range(1, anomalous_image.height - 1):
+            # Check if the pixel is white and at least one of its neighbors is black
+            if anomalous_image.getpixel((x, y)) == 255 and (
+                anomalous_image.getpixel((x - 1, y)) == 0
+                or anomalous_image.getpixel((x + 1, y)) == 0
+                or anomalous_image.getpixel((x, y - 1)) == 0
+                or anomalous_image.getpixel((x, y + 1)) == 0
+            ):
+                outline_x.append(x)
+                outline_y.append(y)
+    return outline_x, outline_y
+
+
+#
+# Overlays the anomalous region outline on the image.
+#
+def overlay_anomalous_region_boundary(anomalous_image, annotated_image_file_path):
+    x, y = get_anomaly_outline(anomalous_image)
+    img_array = np.array(anomalous_image)
+    plt.figure()
+    fig, ax = plt.subplots()
+    ax.imshow(img_array)
+    ax.scatter(x, y)
+    plt.savefig(annotated_image_file_path)
+
+
+# combine_files("E:/nududi_datasets/testing2")
+
+train_dir = "E:\\nududi_datasets\\Agriculture-Vision-2021\\train"
+output_dataset_dir = "E:\\nududi_datasets\\testing4"
+create_dataset(train_dir, output_dataset_dir)

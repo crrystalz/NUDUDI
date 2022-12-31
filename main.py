@@ -25,6 +25,7 @@ config.hierarchial_cluster_min_dist = 3085
 
 # Optimal hierarchial cluster min dists:
 # 150 - 14400
+# 75 - 3085
 
 output_writer = OutputWriter("output\\output.txt")
 

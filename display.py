@@ -40,8 +40,8 @@ def draw_polygon_on_image(polygons, image, filename) -> None:
         # Plot the polygon on top of the image
         ax.plot(x, y)
 
-    dir = ("output\\" + filename[0:-4] + "\\cluster_overlay.png")
-    
+    dir = "output\\" + filename[0:-4] + "\\cluster_overlay.png"
+
     # Show the plot
     plt.savefig(dir)
 
