@@ -3,3 +3,5 @@ __pycache__/
 .idea/
 output/
 datasets/
+
+nutrient_deficiency_test.jpg
