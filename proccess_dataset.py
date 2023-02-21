@@ -179,4 +179,4 @@ def overlay_anomalous_region_boundary(anomalous_image_bw, anomalous_image_rgb, a
 
 train_dir = "F:\\nududi_datasets\\agriculture-vision-2021-supervised\\supervised\\Agriculture-Vision-2021\\train"
 output_dataset_dir = "F:\\nududi_datasets\\testing-1"
-create_dataset(train_dir, output_dataset_dir, 9, 5)
+create_dataset(train_dir, output_dataset_dir, 9, 10)
