@@ -59,7 +59,9 @@ def is_black(image, tolerance=10):
     return np.all(np.abs(image - 0) <= tolerance)
 
 
-def create_dataset(path_to_train_dir, output_dataset_dir, num_anomalies, images_per_anomaly = -1):
+def create_dataset(
+    path_to_train_dir, output_dataset_dir, num_anomalies, images_per_anomaly=-1
+):
     for root, dirs, files in os.walk(output_dataset_dir):
         for f in files:
             os.unlink(os.path.join(root, f))
@@ -67,7 +69,7 @@ def create_dataset(path_to_train_dir, output_dataset_dir, num_anomalies, images_
             shutil.rmtree(os.path.join(root, d))
 
     print("Deleted previous files")
-    
+
     images_dir = os.path.join(path_to_train_dir, "images", "rgb")
     labels_dir = os.path.join(path_to_train_dir, "labels")
 
@@ -82,7 +84,7 @@ def create_dataset(path_to_train_dir, output_dataset_dir, num_anomalies, images_
         num_files = images_per_anomaly * num_anomalies
 
     print()
-    printProgressBar(0, num_files, prefix = 'Progress:', suffix = 'Complete', length = 50)
+    printProgressBar(0, num_files, prefix="Progress:", suffix="Complete", length=50)
     progress = 0
 
     fig, ax = plt.subplots()
@@ -124,22 +126,36 @@ def create_dataset(path_to_train_dir, output_dataset_dir, num_anomalies, images_
                     )
                 else:
                     shutil.copy(
-                        str(images_dir) + "\\" + file_name[:-3] + "jpg", f"{output_image_dir}\\{file_name}"
+                        str(images_dir) + "\\" + file_name[:-3] + "jpg",
+                        f"{output_image_dir}\\{file_name}",
                     )
-                
-                anomalous_image_bw = Image.open(f"{anomaly_dir}\\{file_name}").convert('L')
+
+                anomalous_image_bw = Image.open(f"{anomaly_dir}\\{file_name}").convert(
+                    "L"
+                )
                 anomalous_image_rgb = Image.open(f"{output_image_dir}\\{file_name}")
                 overlay_anomalous_region_boundary(
-                    anomalous_image_bw, anomalous_image_rgb, f"{output_annotated_image_dir}/{file_name}", fig, ax
+                    anomalous_image_bw,
+                    anomalous_image_rgb,
+                    f"{output_annotated_image_dir}/{file_name}",
+                    fig,
+                    ax,
                 )
 
                 count = count + 1
                 progress += 1
 
-                if progress < num_files: printProgressBar(progress + 1, num_files, prefix = 'Progress:', suffix = 'Complete', length = 50)
-            
+                if progress < num_files:
+                    printProgressBar(
+                        progress + 1,
+                        num_files,
+                        prefix="Progress:",
+                        suffix="Complete",
+                        length=50,
+                    )
+
             i += 1
-        
+
         plt.close(fig)
 
         # print(anomaly_type + " count: " + str(count))
@@ -165,12 +181,14 @@ def get_anomaly_outline(anomalous_image):
 
 
 # Overlays the anomalous region outline on the image.
-def overlay_anomalous_region_boundary(anomalous_image_bw, anomalous_image_rgb, annotated_image_file_path, fig, ax):
+def overlay_anomalous_region_boundary(
+    anomalous_image_bw, anomalous_image_rgb, annotated_image_file_path, fig, ax
+):
     x, y = get_anomaly_outline(anomalous_image_bw)
     img_array = np.array(anomalous_image_rgb)
 
     ax.imshow(img_array)
-    ax.scatter(x, y, s = 1)
+    ax.scatter(x, y, s=1)
     plt.savefig(annotated_image_file_path)
     plt.clf()
 

@@ -1,5 +1,5 @@
 from sklearn.cluster import KMeans
-from cluster import Cluster
+from cluster_cells import Cluster
 
 
 def find_k_means_clusters_from_hist(single_image):

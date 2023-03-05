@@ -4,7 +4,7 @@ import cv2
 from scipy.cluster.hierarchy import dendrogram
 
 from cell import Cell
-from cluster import Cluster
+from cluster_cells import Cluster
 from k_means_clustering import find_k_means_clusters_from_hist
 from hierarchial_clustering import hierarchical_clustering
 
