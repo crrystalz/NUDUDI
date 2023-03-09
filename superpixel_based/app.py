@@ -67,7 +67,7 @@ app.layout = html.Div(
         ),
         html.Div("Maximum allowable distance between segments for clustering: "),
         html.Div(
-            dcc.Slider(id="threshold", min=5, max=20, step=0.5, value=13),
+            dcc.Slider(id="threshold", min=5, max=20, step=0.5, value=13.5),
             style={"margin": 30},
         ),
         html.Br(),

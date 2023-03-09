@@ -1,6 +1,6 @@
 from skimage import io, segmentation
 from skimage.future import graph
-from superpixel_based.graph_merge_custom import merge_hierarchical
+from graph_merge_custom import merge_hierarchical
 import numpy as np
 
 
