@@ -1,4 +1,7 @@
 # 🖼️ NUDUDI [WIP]
+
+⚠️ **VERCEL DEPLOYMENT IS CURRENTLY INACTIVE**
+
 Non-Uniformity Detection Using Drone Imagery (NUDUDI) encompasses several tools that can be used to detect anomalys in an image or several images over a period of time.
 
 ### Libraries Used:
