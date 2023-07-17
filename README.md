@@ -1,4 +1,4 @@
-# 🖼️ NUDUDI [WIP]
+# 🚜 NUDUDI
 
 ⚠️ **VERCEL DEPLOYMENT IS CURRENTLY INACTIVE**
 
