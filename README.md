@@ -16,7 +16,7 @@ Ordered from most recent to oldest.
 
 ## Google Colabs
 ``.ipynb`` files of the following Colabs may be found in the repo but they are not necessarily updated with the most recent code.
-- https://drive.google.com/file/d/1mDf6AoyxBCA1nxUQn5IYNSOPP0dBeLuy/view?usp=sharing
+- https://colab.research.google.com/drive/1BZ7nN85NcJ3HBbRY30dDQG93gxvJ2KeZ?usp=sharing
 
 <br>
 
