@@ -12,7 +12,7 @@ Ordered from most recent to oldest.
 - YOLOv8 (ultralytics/ultralytics)
 - SAM (facebookresearch/segment-anything)
 - Superpixel Based (Using the SLIC algorithm)
-- Grid Based (Segmenting the image into a uniform grid)
+- Grid Based (Segmenting the image into a uniform grid) (includes Hungarian Algorithm, K-means clustering, among others)
 
 ## Google Colabs
 ``.ipynb`` files of the following Colabs may be found in the repo but they are not necessarily updated with the most recent code.
